@@ -1,30 +1,83 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-import 'package:hitokoto_nikki/main.dart';
+import 'package:hitokoto_nikki/src/models/diary_entry.dart';
+import 'package:hitokoto_nikki/src/purchase/purchase_store.dart';
+import 'package:hitokoto_nikki/src/repository/diary_repository.dart';
+import 'package:hitokoto_nikki/src/screens/calendar_screen.dart';
+import 'package:hitokoto_nikki/src/state/app_state.dart';
+import 'package:hitokoto_nikki/src/theme/app_theme.dart';
+
+Future<AppState> pumpApp(
+  WidgetTester tester, {
+  Iterable<DiaryEntry>? initial,
+  bool premium = false,
+}) async {
+  final state = AppState(
+    repository: InMemoryDiaryRepository(initial),
+    purchase: FakePurchaseStore(isPremium: premium),
+  );
+  await state.load();
+  await tester.pumpWidget(
+    AppScope(
+      state: state,
+      child: MaterialApp(
+        theme: AppTheme.light(),
+        home: const CalendarScreen(),
+      ),
+    ),
+  );
+  return state;
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  setUpAll(() async => initializeDateFormatting('ja'));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  testWidgets('カレンダー画面が表示される', (tester) async {
+    await pumpApp(tester);
+    expect(find.text('今日を書く'), findsOneWidget);
+    // 曜日ヘッダー。
+    expect(find.text('日'), findsWidgets);
+    expect(find.text('月'), findsWidgets);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('日をタップ → 書いて戻ると保存される', (tester) async {
+    final state = await pumpApp(tester);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 「今日を書く」からエディタへ。
+    await tester.tap(find.text('今日を書く'));
+    await tester.pumpAndSettle();
+    expect(find.text('日記'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'テスト日記');
+    // 戻る(自動保存)。
+    final backButton = find.byTooltip('Back');
+    await tester.tap(backButton);
+    await tester.pumpAndSettle();
+
+    expect(state.entryCount, 1);
+    expect(state.hasEntry(DateTime.now()), isTrue);
+  });
+
+  testWidgets('無料枠が満杯だと新規作成で購入導線が出る', (tester) async {
+    final initial = List.generate(
+      30,
+      (i) => DiaryEntry(
+        date: DateTime(2020, 1, 1).add(Duration(days: i)),
+        text: '$i',
+        updatedAt: DateTime(2020, 1, 1),
+      ),
+    );
+    await pumpApp(tester, initial: initial);
+
+    await tester.tap(find.text('今日を書く'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '31件目');
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    // 購入ボトムシートの文言が表示される。
+    expect(find.text('無制限に書くには'), findsOneWidget);
   });
 }
