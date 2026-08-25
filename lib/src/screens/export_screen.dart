@@ -1,14 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../share/text_sharer.dart';
 import '../state/app_state.dart';
 
 /// 全日記をテキストとして書き出す(バックアップ)画面。
 ///
-/// オフライン方針のため、まずは端末内で選択・コピーできる形にする。
-/// 共有シート連携は今後の拡張。
+/// 端末内で選択・コピーできるほか、共有シートで他アプリ(メモ・メール等)へ
+/// 送れる。共有シートは端末機能に渡すだけで、アプリ自身は通信しない。
 class ExportScreen extends StatelessWidget {
-  const ExportScreen({super.key});
+  const ExportScreen({super.key, this.sharer = const SharePlusSharer()});
+
+  /// 共有処理。テストではフェイクに差し替えるため注入可能にしている。
+  final TextSharer sharer;
+
+  Future<void> _copy(BuildContext context, AppState state) async {
+    final text = await state.exportAsText();
+    if (!context.mounted) return;
+    if (text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('まだ日記がありません')),
+      );
+      return;
+    }
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('コピーしました')),
+    );
+  }
+
+  Future<void> _share(BuildContext context, AppState state) async {
+    final text = await state.exportAsText();
+    if (!context.mounted) return;
+    if (text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('まだ日記がありません')),
+      );
+      return;
+    }
+    await sharer.share(text, subject: 'ひとこと日記のバックアップ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +50,14 @@ class ExportScreen extends StatelessWidget {
         title: const Text('テキスト書き出し'),
         actions: [
           IconButton(
+            tooltip: '共有',
+            icon: const Icon(Icons.ios_share),
+            onPressed: () => _share(context, state),
+          ),
+          IconButton(
             tooltip: 'コピー',
             icon: const Icon(Icons.copy_all),
-            onPressed: () async {
-              final text = await state.exportAsText();
-              await Clipboard.setData(ClipboardData(text: text));
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('コピーしました')),
-                );
-              }
-            },
+            onPressed: () => _copy(context, state),
           ),
         ],
       ),

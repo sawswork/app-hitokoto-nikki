@@ -41,6 +41,9 @@ dependencies:
   path_provider: ^2.1.5
   # 設定・購入状態などの小さな値の保存
   shared_preferences: ^2.3.5
+  # 書き出しテキストを OS の共有シートへ渡す(メール/メモ等の端末機能に渡すだけで、
+  # アプリ自身はネットワーク通信を行わない=オフライン方針は維持)
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:

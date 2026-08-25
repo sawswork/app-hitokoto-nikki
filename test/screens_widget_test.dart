@@ -9,8 +9,21 @@ import 'package:hitokoto_nikki/src/repository/diary_repository.dart';
 import 'package:hitokoto_nikki/src/screens/export_screen.dart';
 import 'package:hitokoto_nikki/src/screens/paywall.dart';
 import 'package:hitokoto_nikki/src/screens/search_screen.dart';
+import 'package:hitokoto_nikki/src/share/text_sharer.dart';
 import 'package:hitokoto_nikki/src/state/app_state.dart';
 import 'package:hitokoto_nikki/src/theme/app_theme.dart';
+
+/// 共有シートのネイティブ呼び出しを避け、渡された内容だけを記録するフェイク。
+class _FakeSharer implements TextSharer {
+  String? sharedText;
+  String? sharedSubject;
+
+  @override
+  Future<void> share(String text, {String? subject}) async {
+    sharedText = text;
+    sharedSubject = subject;
+  }
+}
 
 /// 検索・書き出し画面を直接 pump するための共通ヘルパー。
 Future<AppState> pumpScreen(
@@ -149,6 +162,40 @@ void main() {
 
       expect(copied, contains('元日の朝'));
       expect(find.text('コピーしました'), findsOneWidget);
+    });
+
+    testWidgets('共有ボタンで全日記が共有シートへ渡される', (tester) async {
+      final sharer = _FakeSharer();
+      await pumpScreen(
+        tester,
+        ExportScreen(sharer: sharer),
+        initial: [
+          _entry(DateTime(2024, 1, 1), '元日の朝'),
+          _entry(DateTime(2024, 1, 2), '初詣に行った'),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('共有'));
+      await tester.pumpAndSettle();
+
+      // 共有シートへ全日記の本文が渡っている(通信はしない)。
+      expect(sharer.sharedText, contains('元日の朝'));
+      expect(sharer.sharedText, contains('初詣に行った'));
+      expect(sharer.sharedSubject, 'ひとこと日記のバックアップ');
+    });
+
+    testWidgets('日記が無いときは共有せず案内を出す', (tester) async {
+      final sharer = _FakeSharer();
+      await pumpScreen(tester, ExportScreen(sharer: sharer));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('共有'));
+      await tester.pumpAndSettle();
+
+      // 空なら共有シートを開かず、やさしい案内だけ出す。
+      expect(sharer.sharedText, isNull);
+      expect(find.text('まだ日記がありません'), findsWidgets);
     });
   });
 
