@@ -1,0 +1,59 @@
+# claude — 開発ループ(このアプリ専用の作業担当)
+# イシューやコメントに反応して、設計・実装・テスト・修正を進める。
+# 作業モデルはOpus系の最新(司令塔 app-factory の CLAUDE.md の表が正)。
+name: claude
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: claude-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  work:
+    # Botの発言には反応しない(無限ループ防止)
+    if: >-
+      (github.event_name == 'issues' && github.event.issue.user.type != 'Bot') ||
+      (github.event_name == 'issue_comment' && github.event.comment.user.type != 'Bot')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: リポジトリを取得
+        uses: actions/checkout@v4
+
+      - name: 作業する
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            あなたはこのアプリの作業担当(Opus)です。このリポジトリの CLAUDE.md のルールに従ってください。
+
+            対象イシュー: #${{ github.event.issue.number }}
+
+            手順:
+            1. `gh issue view ${{ github.event.issue.number }} --comments` で本文と最新コメントを確認する。
+            2. 求められている作業(設計・実装・修正など)を進める。
+               - 実装は小さく区切る。`flutter analyze` と `flutter test` が全部合格してから main へプッシュする
+               - 途中で時間切れになっても続きから再開できるよう、区切りごとに進捗をイシューへコメントする
+            3. 作業を終えたら、やったこと・残っていることをイシュー #${{ github.event.issue.number }} へ日本語でコメントする。
+
+            守ること:
+            - 秘密の鍵(Secrets)をコード・イシュー・ログに書かない
+            - サーバーや外部サービスを追加しない(オフライン完結)
+            - お金・外部サービス・Macの利用が要る判断は自分でせず、イシューにコメントして待つ
+          claude_args: |
+            --model claude-opus-4-8
+            --max-turns 100
+            --allowedTools "Bash,Read,Write,Edit,Glob,Grep"
