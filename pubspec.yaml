@@ -1,5 +1,5 @@
 name: hitokoto_nikki
-description: "A new Flutter project."
+description: "ひとこと日記(仮) — 1日1行書くだけで思い出がたまるオフライン日記アプリ"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -34,6 +34,13 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+
+  # 日付整形(オフラインで完結。ネットワーク通信は行わない)
+  intl: ^0.20.2
+  # 端末内のアプリ専用ディレクトリへ日記JSONを保存
+  path_provider: ^2.1.5
+  # 設定・購入状態などの小さな値の保存
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:
