@@ -42,6 +42,26 @@ void main() {
     expect(find.text('月'), findsWidgets);
   });
 
+  testWidgets('日記が無い月ではやさしい空状態の案内が出る', (tester) async {
+    await pumpApp(tester);
+    expect(find.textContaining('この月はまだ真っ白'), findsOneWidget);
+  });
+
+  testWidgets('その月に日記があれば空状態の案内は消える', (tester) async {
+    await pumpApp(
+      tester,
+      initial: [
+        DiaryEntry(
+          date: DateTime.now(),
+          text: '今日の一言',
+          updatedAt: DateTime.now(),
+        ),
+      ],
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('この月はまだ真っ白'), findsNothing);
+  });
+
   testWidgets('日をタップ → 書いて戻ると保存される', (tester) async {
     final state = await pumpApp(tester);
 

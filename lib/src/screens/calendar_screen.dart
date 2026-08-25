@@ -36,6 +36,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
     setState(() => _month = DateTime(now.year, now.month, 1));
   }
 
+  /// 表示中の月に日記が1件でもあるか。空の月のやさしい案内に使う。
+  bool _monthHasEntry(AppState state) {
+    final days = DateTime(_month.year, _month.month + 1, 0).day;
+    for (var d = 1; d <= days; d++) {
+      if (state.hasEntry(DateTime(_month.year, _month.month, d))) return true;
+    }
+    return false;
+  }
+
   Future<void> _openDay(DateTime day) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => EditorScreen(date: day)),
@@ -133,7 +142,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     hasEntry: state.hasEntry,
                     onTapDay: _openDay,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _monthHasEntry(state)
+                        ? const SizedBox.shrink()
+                        : const _EmptyMonthHint(),
+                  ),
+                  const SizedBox(height: 8),
                   _FooterInfo(state: state),
                 ],
               ),
@@ -146,6 +162,31 @@ class _CalendarScreenState extends State<CalendarScreen> {
         icon: const Icon(Icons.edit_outlined),
         label: const Text('今日を書く'),
       ),
+    );
+  }
+}
+
+/// 表示中の月に日記が無いときの、やさしい空状態の案内。
+class _EmptyMonthHint extends StatelessWidget {
+  const _EmptyMonthHint();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Icon(
+          Icons.wb_sunny_outlined,
+          size: 28,
+          color: theme.colorScheme.primary.withValues(alpha: 0.6),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'この月はまだ真っ白。\n今日をひとことから始めましょう。',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+        ),
+      ],
     );
   }
 }
