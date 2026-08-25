@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../models/diary_entry.dart';
 import '../state/app_state.dart';
+import '../widgets/highlighted_text.dart';
 import 'editor_screen.dart';
 
 /// 完全一致(部分文字列一致)で日記を探す画面。
@@ -73,8 +74,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     final label =
                         DateFormat('yyyy年 M月 d日 (E)', 'ja').format(e.date);
                     return ListTile(
-                      title: Text(
+                      title: HighlightedText(
                         e.text,
+                        query: _controller.text,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),

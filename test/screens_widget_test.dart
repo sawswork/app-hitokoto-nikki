@@ -12,6 +12,7 @@ import 'package:hitokoto_nikki/src/screens/search_screen.dart';
 import 'package:hitokoto_nikki/src/share/text_sharer.dart';
 import 'package:hitokoto_nikki/src/state/app_state.dart';
 import 'package:hitokoto_nikki/src/theme/app_theme.dart';
+import 'package:hitokoto_nikki/src/widgets/highlighted_text.dart';
 
 /// 共有シートのネイティブ呼び出しを避け、渡された内容だけを記録するフェイク。
 class _FakeSharer implements TextSharer {
@@ -92,6 +93,19 @@ void main() {
 
       expect(find.text('見つかりませんでした'), findsOneWidget);
       expect(find.byType(ListTile), findsNothing);
+    });
+
+    testWidgets('一致した語が結果内で強調表示される', (tester) async {
+      await pumpScreen(tester, const SearchScreen(), initial: sample);
+
+      await tester.enterText(find.byType(TextField), '桜');
+      await tester.pumpAndSettle();
+
+      // 結果タイトルは強調表示ウィジェットで描画され、検索語が渡っている。
+      final highlighted =
+          tester.widgetList<HighlightedText>(find.byType(HighlightedText));
+      expect(highlighted, isNotEmpty);
+      expect(highlighted.every((w) => w.query == '桜'), isTrue);
     });
 
     testWidgets('検索結果から編集画面へ遷移できる', (tester) async {
