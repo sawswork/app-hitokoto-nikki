@@ -15,8 +15,6 @@ class SharePlusSharer implements TextSharer {
 
   @override
   Future<void> share(String text, {String? subject}) async {
-    await SharePlus.instance.share(
-      ShareParams(text: text, subject: subject),
-    );
+    await Share.share(text, subject: subject);
   }
 }
