@@ -1,12 +1,12 @@
 # test — 自動チェックとテスト(Linux)
-# mainへのプッシュとプルリクエストのたびに実行する。開発ループの合否判定に使う。
+# mainへのプッシュのたびに実行する。開発ループの合否判定に使う。
+# 公開リポジトリだが、外部からのプルリクエストでは動かさない(外部コードを実行しないため)。
 # Flutterのプロジェクト(pubspec.yaml)がまだ無いうちは、何もせず合格扱いにする。
 name: test
 
 on:
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
 
 permissions:
