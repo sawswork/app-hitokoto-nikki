@@ -48,3 +48,20 @@ String formatEntriesAsText(Iterable<DiaryEntry> entries) {
   final list = sortByDateDesc(entries);
   return list.map((e) => '${e.key}\n${e.text}').join('\n\n');
 }
+
+/// 書き出しテキストの先頭に付ける見出し1行。
+///
+/// アプリ名・対象期間・件数を「ひとこと日記(全期間・12件)」の形で表す。
+/// バックアップ先(メモ・メール等)で中身が一目で分かるようにするため。
+String exportHeaderLine(ExportRange range, int count) =>
+    'ひとこと日記(${range.label}・$count件)';
+
+/// エントリ群を見出し付きの書き出しテキストへ組み立てる。
+///
+/// 先頭に [exportHeaderLine]、空行を挟んで [formatEntriesAsText] の本文を置く。
+/// 空のときは空文字を返す(呼び出し側の「日記がありません」表示を保つため)。
+String buildExportText(Iterable<DiaryEntry> entries, ExportRange range) {
+  final list = sortByDateDesc(entries);
+  if (list.isEmpty) return '';
+  return '${exportHeaderLine(range, list.length)}\n\n${formatEntriesAsText(list)}';
+}

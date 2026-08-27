@@ -96,17 +96,18 @@ class AppState extends ChangeNotifier {
 
   /// 日記を1つのテキストにまとめて返す(書き出し・バックアップ用)。
   ///
-  /// [range] で対象期間を絞れる(既定は全期間)。全期間はリポジトリの正本を
-  /// そのまま使い、絞り込み時はキャッシュから同じ体裁で組み立てる。
+  /// [range] で対象期間を絞れる(既定は全期間)。どの期間もキャッシュ
+  /// (allEntries と同じ土台)から組み立て、先頭に期間・件数の見出しを付ける。
   /// [now] は「今月/今年」の基準日で、省略時は端末の現在時刻。
   Future<String> exportAsText({
     ExportRange range = ExportRange.all,
     DateTime? now,
   }) {
-    if (range == ExportRange.all) return repository.exportAsText();
     final base = now ?? DateTime.now();
-    final filtered = filterEntriesByRange(_entries.values, range, base);
-    return Future.value(formatEntriesAsText(filtered));
+    final target = range == ExportRange.all
+        ? _entries.values
+        : filterEntriesByRange(_entries.values, range, base);
+    return Future.value(buildExportText(target, range));
   }
 
   Future<void> buyPremium() => purchase.buy();
