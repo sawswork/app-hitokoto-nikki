@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../logic/export_range.dart';
 import '../logic/free_limit.dart';
 import '../models/diary_entry.dart';
 import '../purchase/purchase_store.dart';
@@ -93,7 +94,20 @@ class AppState extends ChangeNotifier {
 
   Future<List<DiaryEntry>> search(String query) => repository.search(query);
 
-  Future<String> exportAsText() => repository.exportAsText();
+  /// 日記を1つのテキストにまとめて返す(書き出し・バックアップ用)。
+  ///
+  /// [range] で対象期間を絞れる(既定は全期間)。全期間はリポジトリの正本を
+  /// そのまま使い、絞り込み時はキャッシュから同じ体裁で組み立てる。
+  /// [now] は「今月/今年」の基準日で、省略時は端末の現在時刻。
+  Future<String> exportAsText({
+    ExportRange range = ExportRange.all,
+    DateTime? now,
+  }) {
+    if (range == ExportRange.all) return repository.exportAsText();
+    final base = now ?? DateTime.now();
+    final filtered = filterEntriesByRange(_entries.values, range, base);
+    return Future.value(formatEntriesAsText(filtered));
+  }
 
   Future<void> buyPremium() => purchase.buy();
 

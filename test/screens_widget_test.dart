@@ -211,6 +211,40 @@ void main() {
       expect(sharer.sharedText, isNull);
       expect(find.text('まだ日記がありません'), findsWidgets);
     });
+
+    testWidgets('期間チップ(全期間/今年/今月)が並ぶ', (tester) async {
+      await pumpScreen(
+        tester,
+        const ExportScreen(),
+        initial: [_entry(DateTime(2024, 1, 1), '元日の朝')],
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ChoiceChip), findsNWidgets(3));
+      expect(find.text('全期間'), findsOneWidget);
+      expect(find.text('今年'), findsOneWidget);
+      expect(find.text('今月'), findsOneWidget);
+    });
+
+    testWidgets('過去の日記だけのとき「今月」で対象外の案内が出る', (tester) async {
+      // 2024年の日記のみ。実行時の「今月」には該当しないので空になる。
+      await pumpScreen(
+        tester,
+        const ExportScreen(),
+        initial: [_entry(DateTime(2024, 1, 1), '元日の朝')],
+      );
+      await tester.pumpAndSettle();
+
+      // 全期間では本文が見える。
+      expect(find.textContaining('元日の朝'), findsOneWidget);
+
+      await tester.tap(find.text('今月'));
+      await tester.pumpAndSettle();
+
+      // 今月には該当が無いので、期間向けの案内に切り替わる。
+      expect(find.text('この期間の日記はありません'), findsOneWidget);
+      expect(find.textContaining('元日の朝'), findsNothing);
+    });
   });
 
   group('購入導線(paywall)', () {
