@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../logic/search_label.dart';
 import '../models/diary_entry.dart';
 import '../state/app_state.dart';
 import '../widgets/highlighted_text.dart';
@@ -66,31 +67,46 @@ class _SearchScreenState extends State<SearchScreen> {
                         ?.copyWith(color: theme.disabledColor),
                   ),
                 )
-              : ListView.separated(
-                  itemCount: _results.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) {
-                    final e = _results[i];
-                    final label =
-                        DateFormat('yyyy年 M月 d日 (E)', 'ja').format(e.date);
-                    return ListTile(
-                      title: HighlightedText(
-                        e.text,
-                        query: _controller.text,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      child: Text(
+                        searchResultCountLabel(_results.length),
+                        style: theme.textTheme.labelMedium
+                            ?.copyWith(color: theme.hintColor),
                       ),
-                      subtitle: Text(label),
-                      onTap: () async {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => EditorScreen(date: e.date),
-                          ),
-                        );
-                        if (mounted) _runSearch(_controller.text);
-                      },
-                    );
-                  },
+                    ),
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: _results.length,
+                        separatorBuilder: (_, _) => const Divider(height: 1),
+                        itemBuilder: (context, i) {
+                          final e = _results[i];
+                          final label = DateFormat('yyyy年 M月 d日 (E)', 'ja')
+                              .format(e.date);
+                          return ListTile(
+                            title: HighlightedText(
+                              e.text,
+                              query: _controller.text,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(label),
+                            onTap: () async {
+                              await Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => EditorScreen(date: e.date),
+                                ),
+                              );
+                              if (mounted) _runSearch(_controller.text);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
     );
   }

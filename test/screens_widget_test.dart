@@ -85,6 +85,16 @@ void main() {
       expect(chiru.dy, lessThan(saita.dy));
     });
 
+    testWidgets('結果があると件数見出しが出る', (tester) async {
+      await pumpScreen(tester, const SearchScreen(), initial: sample);
+
+      await tester.enterText(find.byType(TextField), '桜');
+      await tester.pumpAndSettle();
+
+      // 「桜」を含む2件なので、見出しは「2件見つかりました」。
+      expect(find.text('2件見つかりました'), findsOneWidget);
+    });
+
     testWidgets('一致しない語は「見つかりませんでした」', (tester) async {
       await pumpScreen(tester, const SearchScreen(), initial: sample);
 
