@@ -95,13 +95,13 @@ void main() {
       expect(find.text('2件見つかりました'), findsOneWidget);
     });
 
-    testWidgets('一致しない語は「見つかりませんでした」', (tester) async {
+    testWidgets('一致しない語は探した語を添えて空状態を出す', (tester) async {
       await pumpScreen(tester, const SearchScreen(), initial: sample);
 
       await tester.enterText(find.byType(TextField), '雪');
       await tester.pumpAndSettle();
 
-      expect(find.text('見つかりませんでした'), findsOneWidget);
+      expect(find.text('「雪」に一致する日記はありません'), findsOneWidget);
       expect(find.byType(ListTile), findsNothing);
     });
 

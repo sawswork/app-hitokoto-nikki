@@ -61,10 +61,14 @@ class _SearchScreenState extends State<SearchScreen> {
             )
           : _results.isEmpty
               ? Center(
-                  child: Text(
-                    '見つかりませんでした',
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: theme.disabledColor),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      searchEmptyLabel(_controller.text),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.disabledColor),
+                    ),
                   ),
                 )
               : Column(
