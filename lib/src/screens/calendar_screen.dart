@@ -205,7 +205,9 @@ class _FooterInfo extends StatelessWidget {
         : remaining == null
             ? ''
             : '無料で残り $remaining 日分';
-    final streak = streakLabel(state.currentStreak());
+    final streakDays = state.currentStreak();
+    final streak = streakLabel(streakDays);
+    final milestone = streakMilestoneLabel(streakDays);
     return Column(
       children: [
         if (streak.isNotEmpty) ...[
@@ -214,6 +216,25 @@ class _FooterInfo extends StatelessWidget {
             style: theme.textTheme.labelMedium
                 ?.copyWith(color: theme.colorScheme.primary),
           ),
+          if (milestone.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.auto_awesome,
+                  size: 14,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  milestone,
+                  style: theme.textTheme.labelSmall
+                      ?.copyWith(color: theme.colorScheme.primary),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 4),
         ],
         Text(

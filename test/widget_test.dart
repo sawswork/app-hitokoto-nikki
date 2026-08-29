@@ -74,6 +74,40 @@ void main() {
     expect(find.text('3日つづけて書いています'), findsOneWidget);
   });
 
+  testWidgets('連続が節目に届くとお祝いの一言がそっと出る', (tester) async {
+    final now = DateTime.now();
+    // 今日から7日連続 = 1週間の節目。
+    final week = List.generate(
+      7,
+      (i) => DiaryEntry(
+        date: now.subtract(Duration(days: i)),
+        text: '$i日前',
+        updatedAt: now,
+      ),
+    );
+    await pumpApp(tester, initial: week);
+    await tester.pumpAndSettle();
+    expect(find.text('7日つづけて書いています'), findsOneWidget);
+    expect(find.text('1週間つづきました'), findsOneWidget);
+  });
+
+  testWidgets('節目でない連続ではお祝いは出ない', (tester) async {
+    final now = DateTime.now();
+    // 今日から3日連続は節目だが、2日連続は節目でない。
+    final two = List.generate(
+      2,
+      (i) => DiaryEntry(
+        date: now.subtract(Duration(days: i)),
+        text: '$i日前',
+        updatedAt: now,
+      ),
+    );
+    await pumpApp(tester, initial: two);
+    await tester.pumpAndSettle();
+    expect(find.text('2日つづけて書いています'), findsOneWidget);
+    expect(find.textContaining('つづきました'), findsNothing);
+  });
+
   testWidgets('日記が無ければ連続の見出しは出ない', (tester) async {
     await pumpApp(tester);
     await tester.pumpAndSettle();

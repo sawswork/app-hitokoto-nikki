@@ -57,4 +57,26 @@ void main() {
       expect(streakLabel(1), '');
     });
   });
+
+  group('streakMilestoneLabel', () {
+    test('節目ちょうどの日はお祝いを添える', () {
+      expect(streakMilestoneLabel(3), '三日つづきました');
+      expect(streakMilestoneLabel(7), '1週間つづきました');
+      expect(streakMilestoneLabel(30), '1か月つづきました');
+      expect(streakMilestoneLabel(100), '100日つづきました');
+      expect(streakMilestoneLabel(365), '1年つづきました');
+    });
+
+    test('節目でない日は非表示(空文字)', () {
+      expect(streakMilestoneLabel(2), '');
+      expect(streakMilestoneLabel(6), '');
+      expect(streakMilestoneLabel(8), '');
+      expect(streakMilestoneLabel(31), '');
+    });
+
+    test('0日以下も非表示(空文字)', () {
+      expect(streakMilestoneLabel(0), '');
+      expect(streakMilestoneLabel(-1), '');
+    });
+  });
 }
