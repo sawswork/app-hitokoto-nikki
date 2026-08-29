@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../logic/export_range.dart';
 import '../logic/free_limit.dart';
+import '../logic/streak.dart';
 import '../models/diary_entry.dart';
 import '../purchase/purchase_store.dart';
 import '../repository/diary_repository.dart';
@@ -91,6 +92,10 @@ class AppState extends ChangeNotifier {
 
   /// 全エントリを新しい順で返す(検索・書き出しの土台)。
   List<DiaryEntry> get allEntries => sortByDateDesc(_entries.values);
+
+  /// 連続で書いている日数([now] は基準日。省略時は端末の現在時刻)。
+  int currentStreak([DateTime? now]) =>
+      currentStreakDays(_entries.values.map((e) => e.date), now ?? DateTime.now());
 
   Future<List<DiaryEntry>> search(String query) => repository.search(query);
 

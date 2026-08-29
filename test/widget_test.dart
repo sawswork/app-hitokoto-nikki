@@ -62,6 +62,24 @@ void main() {
     expect(find.textContaining('この月はまだ真っ白'), findsNothing);
   });
 
+  testWidgets('今日まで連続して書いていると励ましの見出しが出る', (tester) async {
+    final now = DateTime.now();
+    DiaryEntry madeAt(int daysAgo) => DiaryEntry(
+          date: now.subtract(Duration(days: daysAgo)),
+          text: '$daysAgo日前',
+          updatedAt: now,
+        );
+    await pumpApp(tester, initial: [madeAt(0), madeAt(1), madeAt(2)]);
+    await tester.pumpAndSettle();
+    expect(find.text('3日つづけて書いています'), findsOneWidget);
+  });
+
+  testWidgets('日記が無ければ連続の見出しは出ない', (tester) async {
+    await pumpApp(tester);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('つづけて書いています'), findsNothing);
+  });
+
   testWidgets('日をタップ → 書いて戻ると保存される', (tester) async {
     final state = await pumpApp(tester);
 

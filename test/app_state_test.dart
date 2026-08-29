@@ -95,6 +95,19 @@ void main() {
       expect(notified, greaterThan(0));
     });
 
+    test('currentStreak は基準日から連続して書いた日数を返す', () async {
+      final today = DateTime(2026, 8, 29);
+      final state = buildState(initial: [
+        entry(today, 'きょう'),
+        entry(today.subtract(const Duration(days: 1)), 'きのう'),
+        entry(today.subtract(const Duration(days: 2)), 'おととい'),
+        // ここで一日抜けているので、連続はここで止まる。
+        entry(today.subtract(const Duration(days: 4)), 'とび日'),
+      ]);
+      await state.load();
+      expect(state.currentStreak(today), 3);
+    });
+
     test('remainingFree は残り件数、プレミアムは null', () async {
       final state = buildState(initial: [entry(DateTime(2026, 8, 25), 'a')]);
       await state.load();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../logic/streak.dart';
 import '../state/app_state.dart';
 import '../utils/date_key.dart';
 import '../widgets/month_calendar.dart';
@@ -204,11 +205,23 @@ class _FooterInfo extends StatelessWidget {
         : remaining == null
             ? ''
             : '無料で残り $remaining 日分';
-    return Center(
-      child: Text(
-        text,
-        style: theme.textTheme.labelMedium?.copyWith(color: theme.disabledColor),
-      ),
+    final streak = streakLabel(state.currentStreak());
+    return Column(
+      children: [
+        if (streak.isNotEmpty) ...[
+          Text(
+            streak,
+            style: theme.textTheme.labelMedium
+                ?.copyWith(color: theme.colorScheme.primary),
+          ),
+          const SizedBox(height: 4),
+        ],
+        Text(
+          text,
+          style:
+              theme.textTheme.labelMedium?.copyWith(color: theme.disabledColor),
+        ),
+      ],
     );
   }
 }
