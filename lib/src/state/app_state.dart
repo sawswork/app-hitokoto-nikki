@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../logic/export_range.dart';
 import '../logic/free_limit.dart';
+import '../logic/month_stats.dart';
 import '../logic/streak.dart';
 import '../models/diary_entry.dart';
 import '../purchase/purchase_store.dart';
@@ -100,6 +101,10 @@ class AppState extends ChangeNotifier {
   /// これまでで一番長く続いた日数(最長連続記録)。基準日は不要。
   int longestStreak() =>
       longestStreakDays(_entries.values.map((e) => e.date));
+
+  /// 指定した年月に書いた日数(その月のカレンダーの手応えに使う)。
+  int monthEntryCount(int year, int month) =>
+      entriesInMonth(_entries.values.map((e) => e.date), year, month);
 
   Future<List<DiaryEntry>> search(String query) => repository.search(query);
 

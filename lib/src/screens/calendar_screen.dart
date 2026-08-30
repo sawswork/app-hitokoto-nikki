@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../logic/month_stats.dart';
 import '../logic/streak.dart';
 import '../state/app_state.dart';
 import '../utils/date_key.dart';
@@ -147,7 +148,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: _monthHasEntry(state)
-                        ? const SizedBox.shrink()
+                        ? _MonthSummary(
+                            count: state.monthEntryCount(
+                                _month.year, _month.month),
+                          )
                         : const _EmptyMonthHint(),
                   ),
                   const SizedBox(height: 8),
@@ -185,6 +189,35 @@ class _EmptyMonthHint extends StatelessWidget {
         Text(
           'この月はまだ真っ白。\n今日をひとことから始めましょう。',
           textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+        ),
+      ],
+    );
+  }
+}
+
+/// 表示中の月に日記があるとき、「この月は◯日書きました」とそっと手応えを添える。
+class _MonthSummary extends StatelessWidget {
+  final int count;
+  const _MonthSummary({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final label = monthSummaryLabel(count);
+    if (label.isEmpty) return const SizedBox.shrink();
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.check_circle_outline,
+          size: 16,
+          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
           style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
         ),
       ],

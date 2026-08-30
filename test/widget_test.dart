@@ -62,6 +62,27 @@ void main() {
     expect(find.textContaining('この月はまだ真っ白'), findsNothing);
   });
 
+  testWidgets('その月に書いた日数がそっと表示される', (tester) async {
+    final now = DateTime.now();
+    await pumpApp(
+      tester,
+      initial: [
+        DiaryEntry(
+          date: DateTime(now.year, now.month, 1),
+          text: '一日',
+          updatedAt: now,
+        ),
+        DiaryEntry(
+          date: DateTime(now.year, now.month, 2),
+          text: '二日',
+          updatedAt: now,
+        ),
+      ],
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('この月は2日書きました'), findsOneWidget);
+  });
+
   testWidgets('今日まで連続して書いていると励ましの見出しが出る', (tester) async {
     final now = DateTime.now();
     DiaryEntry madeAt(int daysAgo) => DiaryEntry(

@@ -122,6 +122,19 @@ void main() {
       expect(state.longestStreak(), 3);
     });
 
+    test('monthEntryCount は指定した年月に書いた日数を返す', () async {
+      final state = buildState(initial: [
+        entry(DateTime(2026, 7, 31), '前月'),
+        entry(DateTime(2026, 8, 1), 'a'),
+        entry(DateTime(2026, 8, 20), 'b'),
+        entry(DateTime(2026, 9, 1), '翌月'),
+      ]);
+      await state.load();
+      expect(state.monthEntryCount(2026, 8), 2);
+      expect(state.monthEntryCount(2026, 7), 1);
+      expect(state.monthEntryCount(2026, 6), 0);
+    });
+
     test('remainingFree は残り件数、プレミアムは null', () async {
       final state = buildState(initial: [entry(DateTime(2026, 8, 25), 'a')]);
       await state.load();
