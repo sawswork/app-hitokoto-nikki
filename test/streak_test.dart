@@ -79,4 +79,60 @@ void main() {
       expect(streakMilestoneLabel(-1), '');
     });
   });
+
+  group('longestStreakDays', () {
+    DateTime d(int y, int m, int day) => DateTime(y, m, day);
+
+    test('日記が無いと 0', () {
+      expect(longestStreakDays(const []), 0);
+    });
+
+    test('全期間で最も長い連続を返す', () {
+      final dates = [
+        // 4日連続の固まり(最長)
+        d(2026, 1, 1), d(2026, 1, 2), d(2026, 1, 3), d(2026, 1, 4),
+        // 離れた2日連続
+        d(2026, 3, 10), d(2026, 3, 11),
+        // 単発
+        d(2026, 5, 1),
+      ];
+      expect(longestStreakDays(dates), 4);
+    });
+
+    test('順不同でも正しく数える', () {
+      final dates = [d(2026, 2, 3), d(2026, 2, 1), d(2026, 2, 2)];
+      expect(longestStreakDays(dates), 3);
+    });
+
+    test('時刻違い・重複は1日として扱う', () {
+      final dates = [
+        DateTime(2026, 2, 1, 8),
+        DateTime(2026, 2, 1, 23),
+        DateTime(2026, 2, 2, 0, 30),
+      ];
+      expect(longestStreakDays(dates), 2);
+    });
+
+    test('月をまたぐ連続も途切れず数える', () {
+      final dates = [d(2026, 1, 30), d(2026, 1, 31), d(2026, 2, 1)];
+      expect(longestStreakDays(dates), 3);
+    });
+
+    test('1件だけなら 1', () {
+      expect(longestStreakDays([d(2026, 4, 4)]), 1);
+    });
+  });
+
+  group('longestStreakLabel', () {
+    test('2日以上の実績で再開をそっと促す', () {
+      expect(longestStreakLabel(2), 'これまでの最長は2日。またここから。');
+      expect(longestStreakLabel(30), 'これまでの最長は30日。またここから。');
+    });
+
+    test('0日・1日は非表示(空文字)', () {
+      expect(longestStreakLabel(0), '');
+      expect(longestStreakLabel(1), '');
+      expect(longestStreakLabel(-3), '');
+    });
+  });
 }

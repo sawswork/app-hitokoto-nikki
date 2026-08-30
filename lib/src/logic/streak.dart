@@ -55,3 +55,40 @@ const Map<int, String> _milestones = {
 /// 節目ちょうどの日だけ返し、それ以外(節目でない日・0日以下)は空文字
 /// =非表示。毎日出し続けず「届いた日」に一度だけそっと出す。
 String streakMilestoneLabel(int days) => _milestones[days] ?? '';
+
+/// これまでで一番長く続いた日数(最長連続記録)を数える純粋関数。
+///
+/// [entryDates] は日記のある日(時刻は無視、重複可)。全期間を通して、
+/// 途切れずに続いた最も長い連続の日数を返す。1件も無ければ 0。
+/// 「今の連続」と違い基準日は不要で、過去のどこであっても構わない。
+int longestStreakDays(Iterable<DateTime> entryDates) {
+  final keys = entryDates.map(dateKey).toSet();
+  if (keys.isEmpty) return 0;
+
+  var longest = 0;
+  for (final key in keys) {
+    final day = parseDateKey(key);
+    // 各連続の先頭(前日が無い日)からだけ数え、二度手間を避ける。
+    if (keys.contains(dateKey(day.subtract(const Duration(days: 1))))) {
+      continue;
+    }
+    var count = 0;
+    var cursor = day;
+    while (keys.contains(dateKey(cursor))) {
+      count++;
+      cursor = cursor.add(const Duration(days: 1));
+    }
+    if (count > longest) longest = count;
+  }
+  return longest;
+}
+
+/// 連続が途切れているとき、これまでの最長記録をそっと示す一言を返す。
+///
+/// 連続が2日以上あった実績([days] >= 2)のときだけ返し、それ未満なら
+/// 空文字=非表示。今の連続が続いている間は別の見出しを出すので、
+/// この文言は「途切れた日」に再開をそっと促すためだけに使う。
+String longestStreakLabel(int days) {
+  if (days < 2) return '';
+  return 'これまでの最長は$days日。またここから。';
+}

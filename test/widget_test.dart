@@ -114,6 +114,39 @@ void main() {
     expect(find.textContaining('つづけて書いています'), findsNothing);
   });
 
+  testWidgets('連続が途切れているとこれまでの最長がそっと出て再開を促す', (tester) async {
+    final now = DateTime.now();
+    // 少し前に2日連続の実績があるが、今日・昨日は書いていない(連続は途切れ)。
+    final past = List.generate(
+      2,
+      (i) => DiaryEntry(
+        date: now.subtract(Duration(days: 10 + i)),
+        text: '${10 + i}日前',
+        updatedAt: now,
+      ),
+    );
+    await pumpApp(tester, initial: past);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('つづけて書いています'), findsNothing);
+    expect(find.text('これまでの最長は2日。またここから。'), findsOneWidget);
+  });
+
+  testWidgets('連続が続いている間は最長の再開うながしは出さない', (tester) async {
+    final now = DateTime.now();
+    final streak = List.generate(
+      3,
+      (i) => DiaryEntry(
+        date: now.subtract(Duration(days: i)),
+        text: '$i日前',
+        updatedAt: now,
+      ),
+    );
+    await pumpApp(tester, initial: streak);
+    await tester.pumpAndSettle();
+    expect(find.text('3日つづけて書いています'), findsOneWidget);
+    expect(find.textContaining('これまでの最長は'), findsNothing);
+  });
+
   testWidgets('日をタップ → 書いて戻ると保存される', (tester) async {
     final state = await pumpApp(tester);
 

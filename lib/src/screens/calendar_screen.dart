@@ -208,8 +208,19 @@ class _FooterInfo extends StatelessWidget {
     final streakDays = state.currentStreak();
     final streak = streakLabel(streakDays);
     final milestone = streakMilestoneLabel(streakDays);
+    // 今の連続が途切れているときだけ、これまでの最長をそっと示して再開を促す。
+    final comeback =
+        streak.isEmpty ? longestStreakLabel(state.longestStreak()) : '';
     return Column(
       children: [
+        if (comeback.isNotEmpty) ...[
+          Text(
+            comeback,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.labelMedium?.copyWith(color: theme.hintColor),
+          ),
+          const SizedBox(height: 4),
+        ],
         if (streak.isNotEmpty) ...[
           Text(
             streak,

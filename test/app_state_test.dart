@@ -108,6 +108,20 @@ void main() {
       expect(state.currentStreak(today), 3);
     });
 
+    test('longestStreak は全期間で最も長い連続日数を返す', () async {
+      final state = buildState(initial: [
+        // 3日連続(最長)
+        entry(DateTime(2026, 1, 1), 'a'),
+        entry(DateTime(2026, 1, 2), 'b'),
+        entry(DateTime(2026, 1, 3), 'c'),
+        // 離れた2日連続
+        entry(DateTime(2026, 3, 10), 'd'),
+        entry(DateTime(2026, 3, 11), 'e'),
+      ]);
+      await state.load();
+      expect(state.longestStreak(), 3);
+    });
+
     test('remainingFree は残り件数、プレミアムは null', () async {
       final state = buildState(initial: [entry(DateTime(2026, 8, 25), 'a')]);
       await state.load();

@@ -97,6 +97,10 @@ class AppState extends ChangeNotifier {
   int currentStreak([DateTime? now]) =>
       currentStreakDays(_entries.values.map((e) => e.date), now ?? DateTime.now());
 
+  /// これまでで一番長く続いた日数(最長連続記録)。基準日は不要。
+  int longestStreak() =>
+      longestStreakDays(_entries.values.map((e) => e.date));
+
   Future<List<DiaryEntry>> search(String query) => repository.search(query);
 
   /// 日記を1つのテキストにまとめて返す(書き出し・バックアップ用)。
