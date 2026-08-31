@@ -83,6 +83,26 @@ void main() {
     expect(find.textContaining('この月は2日書きました'), findsOneWidget);
   });
 
+  testWidgets('その月の全日を書けたら皆勤のねぎらいが出る', (tester) async {
+    final now = DateTime.now();
+    final days = DateTime(now.year, now.month + 1, 0).day;
+    await pumpApp(
+      tester,
+      initial: [
+        for (var d = 1; d <= days; d++)
+          DiaryEntry(
+            date: DateTime(now.year, now.month, d),
+            text: '$d日目',
+            updatedAt: now,
+          ),
+      ],
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('この月は毎日書けました'), findsOneWidget);
+    // 皆勤のときは通常の「◯日書きました」には切り替えない。
+    expect(find.textContaining('書きました'), findsNothing);
+  });
+
   testWidgets('今日まで連続して書いていると励ましの見出しが出る', (tester) async {
     final now = DateTime.now();
     DiaryEntry madeAt(int daysAgo) => DiaryEntry(

@@ -44,4 +44,37 @@ void main() {
       expect(monthSummaryLabel(12), 'この月は12日書きました');
     });
   });
+
+  group('daysInMonth', () {
+    test('月ごとの総日数を返す(うるう年も)', () {
+      expect(daysInMonth(2026, 8), 31);
+      expect(daysInMonth(2026, 4), 30);
+      expect(daysInMonth(2026, 2), 28);
+      expect(daysInMonth(2024, 2), 29); // うるう年
+    });
+  });
+
+  group('isPerfectMonth', () {
+    test('その月の全日を書けたら皆勤', () {
+      expect(isPerfectMonth(31, 31), isTrue);
+      expect(isPerfectMonth(30, 30), isTrue);
+    });
+
+    test('1日でも欠けたら皆勤ではない', () {
+      expect(isPerfectMonth(30, 31), isFalse);
+      expect(isPerfectMonth(1, 28), isFalse);
+    });
+
+    test('0日以下・総日数0以下は皆勤とみなさない', () {
+      expect(isPerfectMonth(0, 31), isFalse);
+      expect(isPerfectMonth(-1, 31), isFalse);
+      expect(isPerfectMonth(5, 0), isFalse);
+    });
+  });
+
+  group('perfectMonthLabel', () {
+    test('ねぎらいの一言を返す', () {
+      expect(perfectMonthLabel(), 'この月は毎日書けました');
+    });
+  });
 }

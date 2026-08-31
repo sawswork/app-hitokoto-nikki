@@ -22,3 +22,18 @@ String monthSummaryLabel(int count) {
   if (count < 1) return '';
   return 'この月は$count日書きました';
 }
+
+/// 指定した年月の総日数(28〜31)を返す純粋関数。皆勤の判定に使う。
+int daysInMonth(int year, int month) => DateTime(year, month + 1, 0).day;
+
+/// その月のすべての日に日記があった(皆勤)かを判定する純粋関数。
+///
+/// [count] はその月に書いた日数、[totalDays] はその月の総日数。
+/// 1日も書いていない月や、日数の食い違いは皆勤とみなさない。
+bool isPerfectMonth(int count, int totalDays) {
+  if (count < 1 || totalDays < 1) return false;
+  return count >= totalDays;
+}
+
+/// 皆勤の月にそっと添える、ねぎらいの一言(純粋関数)。
+String perfectMonthLabel() => 'この月は毎日書けました';

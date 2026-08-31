@@ -151,6 +151,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ? _MonthSummary(
                             count: state.monthEntryCount(
                                 _month.year, _month.month),
+                            totalDays:
+                                daysInMonth(_month.year, _month.month),
                           )
                         : const _EmptyMonthHint(),
                   ),
@@ -197,28 +199,35 @@ class _EmptyMonthHint extends StatelessWidget {
 }
 
 /// 表示中の月に日記があるとき、「この月は◯日書きました」とそっと手応えを添える。
+/// その月のすべての日を書けた(皆勤)ときだけ、少し特別なねぎらいに切り替える。
 class _MonthSummary extends StatelessWidget {
   final int count;
-  const _MonthSummary({required this.count});
+  final int totalDays;
+  const _MonthSummary({required this.count, required this.totalDays});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final label = monthSummaryLabel(count);
+    final perfect = isPerfectMonth(count, totalDays);
+    final label = perfect ? perfectMonthLabel() : monthSummaryLabel(count);
     if (label.isEmpty) return const SizedBox.shrink();
+    final color =
+        perfect ? theme.colorScheme.primary : theme.hintColor;
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
-          Icons.check_circle_outline,
+          perfect ? Icons.emoji_events_outlined : Icons.check_circle_outline,
           size: 16,
-          color: theme.colorScheme.primary.withValues(alpha: 0.7),
+          color: perfect
+              ? theme.colorScheme.primary
+              : theme.colorScheme.primary.withValues(alpha: 0.7),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+          style: theme.textTheme.bodySmall?.copyWith(color: color),
         ),
       ],
     );
